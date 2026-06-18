@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>내 시간표 — 수업 등록</title>
+<title>내 시간표 — 수업·과제 관리</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gaegu:wght@400;700&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -43,7 +43,7 @@
 
   header{
     position:relative;
-    padding:48px 32px 28px 90px;
+    padding:44px 32px 0 90px;
     z-index:1;
   }
 
@@ -59,35 +59,90 @@
 
   h1{
     font-family:'Gowun Batang', serif;
-    font-size:40px;
-    margin:0 0 8px 0;
+    font-size:38px;
+    margin:0 0 6px 0;
     letter-spacing:-0.5px;
   }
 
   .sub{
     color:var(--ink-soft);
     font-size:15px;
-    margin:0;
+    margin:0 0 24px 0;
+  }
+
+  .tab-nav{
+    display:flex;
+    gap:6px;
+    border-bottom:1.5px solid var(--ink);
+    padding-bottom:0;
+  }
+
+  .tab-btn{
+    font-family:'Pretendard', sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    padding:11px 18px;
+    background:transparent;
+    border:1.5px solid transparent;
+    border-bottom:none;
+    border-radius:6px 6px 0 0;
+    cursor:pointer;
+    color:var(--ink-soft);
+    position:relative;
+    top:1.5px;
+    transition:color .15s ease;
+  }
+  .tab-btn .badge{
+    display:inline-block;
+    min-width:18px;
+    padding:0 5px;
+    margin-left:6px;
+    border-radius:9px;
+    background:var(--paper-line);
+    color:var(--ink-soft);
+    font-size:11px;
+    font-weight:700;
+  }
+  .tab-btn.active{
+    color:var(--ink);
+    background:var(--paper);
+    border-color:var(--ink);
+    border-bottom-color:var(--paper);
+  }
+  .tab-btn.active .badge{
+    background:var(--accent-coral);
+    color:#fff;
   }
 
   main{
     position:relative;
     z-index:1;
-    max-width:980px;
+    max-width:1040px;
     margin:0 auto;
     padding:0 32px 80px 90px;
-    display:grid;
-    grid-template-columns:380px 1fr;
-    gap:32px;
   }
 
   @media (max-width:780px){
-    main{ grid-template-columns:1fr; padding-left:32px; }
+    main{ padding-left:32px; }
     header{ padding-left:32px; }
     .corkboard-margin{ display:none; }
+    .tab-nav{ overflow-x:auto; }
+    .tab-btn{ white-space:nowrap; }
   }
 
-  /* ---- 등록 폼 카드 ---- */
+  .panel{ display:none; padding-top:28px; }
+  .panel.active{ display:block; }
+
+  .two-col{
+    display:grid;
+    grid-template-columns:380px 1fr;
+    gap:32px;
+    align-items:start;
+  }
+  @media (max-width:780px){
+    .two-col{ grid-template-columns:1fr; }
+  }
+
   .form-card{
     background:var(--card);
     border:1.5px solid var(--ink);
@@ -132,7 +187,7 @@
   }
   label:first-of-type{ margin-top:0; }
 
-  input[type="text"], input[type="time"]{
+  input[type="text"], input[type="time"], input[type="date"], input[type="url"], select, textarea{
     width:100%;
     padding:10px 12px;
     border:1.5px solid var(--paper-line);
@@ -143,7 +198,8 @@
     color:var(--ink);
     transition:border-color .15s ease;
   }
-  input[type="text"]:focus, input[type="time"]:focus{
+  textarea{ resize:vertical; min-height:64px; }
+  input:focus, select:focus, textarea:focus{
     outline:none;
     border-color:var(--accent-coral);
   }
@@ -225,7 +281,6 @@
   }
   .form-hint.error{ color:var(--accent-coral); font-weight:600; }
 
-  /* ---- 리스트 영역 ---- */
   .list-header{
     display:flex;
     justify-content:space-between;
@@ -241,13 +296,13 @@
     color:var(--ink-soft);
   }
 
-  .class-list{
+  .class-list, .assignment-list, .link-list{
     display:flex;
     flex-direction:column;
     gap:14px;
   }
 
-  .class-card{
+  .class-card, .assignment-card, .link-card{
     background:var(--card);
     border:1.5px solid var(--ink);
     border-radius:2px;
@@ -266,15 +321,21 @@
     flex-shrink:0;
   }
 
-  .class-body{ flex:1; min-width:0; }
+  .class-body, .assignment-body, .link-body{ flex:1; min-width:0; }
 
-  .class-name{
+  .class-name, .assignment-name{
     font-family:'Gowun Batang', serif;
     font-size:19px;
     margin:0 0 4px 0;
   }
 
-  .class-meta{
+  .assignment-card.done .assignment-name{
+    text-decoration:line-through;
+    color:var(--ink-soft);
+  }
+  .assignment-card.done{ opacity:0.6; }
+
+  .class-meta, .assignment-meta{
     font-size:13.5px;
     color:var(--ink-soft);
     margin:2px 0;
@@ -286,7 +347,7 @@
     margin-top:10px;
   }
 
-  .day-tag{
+  .day-tag, .type-tag{
     font-size:11.5px;
     font-weight:700;
     padding:3px 8px;
@@ -295,6 +356,19 @@
     border:1px solid var(--paper-line);
     color:var(--ink-soft);
   }
+
+  .dday-tag{
+    font-size:12px;
+    font-weight:800;
+    padding:3px 10px;
+    border-radius:10px;
+    background:var(--ink);
+    color:var(--paper);
+    display:inline-block;
+    margin-bottom:6px;
+  }
+  .dday-tag.urgent{ background:var(--accent-coral); }
+  .dday-tag.done{ background:var(--paper-line); color:var(--ink-soft); }
 
   .delete-btn{
     background:none;
@@ -305,8 +379,30 @@
     line-height:1;
     padding:4px;
     transition:color .15s ease;
+    flex-shrink:0;
   }
   .delete-btn:hover{ color:var(--accent-coral); }
+
+  .check-btn{
+    width:24px; height:24px;
+    border:1.5px solid var(--ink-soft);
+    border-radius:50%;
+    background:#fff;
+    cursor:pointer;
+    flex-shrink:0;
+    margin-top:2px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    color:transparent;
+    transition:all .15s ease;
+  }
+  .check-btn.checked{
+    background:var(--accent-mint);
+    border-color:var(--accent-mint);
+    color:#fff;
+  }
 
   .empty-state{
     border:1.5px dashed var(--paper-line);
@@ -325,6 +421,68 @@
     transform:rotate(-1deg);
   }
 
+  .dash-section-title{
+    font-family:'Gowun Batang', serif;
+    font-size:19px;
+    margin:32px 0 14px 0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .dash-section-title:first-child{ margin-top:0; }
+  .dash-section-title .count-pill{
+    font-family:'Pretendard', sans-serif;
+    font-size:12px;
+    font-weight:700;
+    background:var(--paper-line);
+    color:var(--ink-soft);
+    padding:2px 9px;
+    border-radius:10px;
+  }
+
+  .stat-row{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:14px;
+    margin-bottom:8px;
+  }
+  @media (max-width:600px){ .stat-row{ grid-template-columns:1fr; } }
+
+  .stat-card{
+    background:var(--card);
+    border:1.5px solid var(--ink);
+    border-radius:2px;
+    padding:18px;
+    text-align:center;
+    box-shadow:var(--shadow);
+  }
+  .stat-num{
+    font-family:'Gowun Batang', serif;
+    font-size:30px;
+  }
+  .stat-label{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+
+  select#assignClassSelect, select#linkClassSelect{ cursor:pointer; }
+
+  .reset-row{
+    margin-top:36px;
+    text-align:center;
+  }
+  .reset-btn{
+    background:none;
+    border:1.5px dashed var(--paper-line);
+    color:var(--ink-soft);
+    font-size:12.5px;
+    padding:8px 16px;
+    border-radius:20px;
+    cursor:pointer;
+  }
+  .reset-btn:hover{ border-color:var(--accent-coral); color:var(--accent-coral); }
+
   footer{
     text-align:center;
     padding:24px;
@@ -342,75 +500,237 @@
 <header>
   <span class="eyebrow">My Semester ✦</span>
   <h1>내 시간표 관리</h1>
-  <p class="sub">수업을 등록하고 한눈에 정리해보세요.</p>
+  <p class="sub">수업, 과제, 강의자료를 한 곳에서 정리해보세요.</p>
+
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="dashboard">오늘 할 일</button>
+    <button class="tab-btn" data-tab="classes">수업 등록<span class="badge" id="classBadge">0</span></button>
+    <button class="tab-btn" data-tab="assignments">과제 관리<span class="badge" id="assignBadge">0</span></button>
+    <button class="tab-btn" data-tab="links">강의자료</button>
+  </nav>
 </header>
 
 <main>
-  <section class="form-card">
-    <h2 class="form-title"><span class="dot"></span>수업 등록</h2>
 
-    <label for="className">수업 이름</label>
-    <input type="text" id="className" placeholder="예: 서양철학사">
-
-    <label for="professor">교수명</label>
-    <input type="text" id="professor" placeholder="예: 김OO 교수님">
-
-    <label>수업 요일</label>
-    <div class="day-grid" id="dayGrid">
-      <div class="day-chip" data-day="월">월</div>
-      <div class="day-chip" data-day="화">화</div>
-      <div class="day-chip" data-day="수">수</div>
-      <div class="day-chip" data-day="목">목</div>
-      <div class="day-chip" data-day="금">금</div>
+  <section class="panel active" id="panel-dashboard">
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num" id="statTotalClasses">0</div>
+        <div class="stat-label">등록된 수업</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statPendingAssign">0</div>
+        <div class="stat-label">남은 과제</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statTodayAssign">0</div>
+        <div class="stat-label">오늘 마감</div>
+      </div>
     </div>
 
-    <label>수업 시간</label>
-    <div class="time-row">
-      <input type="time" id="startTime" value="09:00">
-      <span>~</span>
-      <input type="time" id="endTime" value="10:30">
-    </div>
+    <h2 class="dash-section-title">오늘 마감 <span class="count-pill" id="todayCount">0개</span></h2>
+    <div class="assignment-list" id="todayList"></div>
 
-    <label for="location">강의실 (선택)</label>
-    <input type="text" id="location" placeholder="예: 인문관 401호">
-
-    <label>수업 색상</label>
-    <div class="color-grid" id="colorGrid">
-      <div class="color-swatch selected" style="background:#E8714A" data-color="#E8714A"></div>
-      <div class="color-swatch" style="background:#F4C95D" data-color="#F4C95D"></div>
-      <div class="color-swatch" style="background:#79B4A6" data-color="#79B4A6"></div>
-      <div class="color-swatch" style="background:#5B7FB5" data-color="#5B7FB5"></div>
-      <div class="color-swatch" style="background:#9C7BB0" data-color="#9C7BB0"></div>
-    </div>
-
-    <button class="submit-btn" id="submitBtn">+ 수업 추가하기</button>
-    <p class="form-hint" id="formHint"></p>
+    <h2 class="dash-section-title">이번 주 마감 <span class="count-pill" id="weekCount">0개</span></h2>
+    <div class="assignment-list" id="weekList"></div>
   </section>
 
-  <section class="list-section">
-    <div class="list-header">
-      <h2 class="list-title">등록된 수업</h2>
-      <span class="list-count" id="listCount">0개</span>
+  <section class="panel" id="panel-classes">
+    <div class="two-col">
+      <div class="form-card">
+        <h2 class="form-title"><span class="dot"></span>수업 등록</h2>
+
+        <label for="className">수업 이름</label>
+        <input type="text" id="className" placeholder="예: 서양철학사">
+
+        <label for="professor">교수명</label>
+        <input type="text" id="professor" placeholder="예: 김OO 교수님">
+
+        <label>수업 요일</label>
+        <div class="day-grid" id="dayGrid">
+          <div class="day-chip" data-day="월">월</div>
+          <div class="day-chip" data-day="화">화</div>
+          <div class="day-chip" data-day="수">수</div>
+          <div class="day-chip" data-day="목">목</div>
+          <div class="day-chip" data-day="금">금</div>
+        </div>
+
+        <label>수업 시간</label>
+        <div class="time-row">
+          <input type="time" id="startTime" value="09:00">
+          <span>~</span>
+          <input type="time" id="endTime" value="10:30">
+        </div>
+
+        <label for="location">강의실 (선택)</label>
+        <input type="text" id="location" placeholder="예: 인문관 401호">
+
+        <label>수업 색상</label>
+        <div class="color-grid" id="colorGrid">
+          <div class="color-swatch selected" style="background:#E8714A" data-color="#E8714A"></div>
+          <div class="color-swatch" style="background:#F4C95D" data-color="#F4C95D"></div>
+          <div class="color-swatch" style="background:#79B4A6" data-color="#79B4A6"></div>
+          <div class="color-swatch" style="background:#5B7FB5" data-color="#5B7FB5"></div>
+          <div class="color-swatch" style="background:#9C7BB0" data-color="#9C7BB0"></div>
+        </div>
+
+        <button class="submit-btn" id="classSubmitBtn">+ 수업 추가하기</button>
+        <p class="form-hint" id="classFormHint"></p>
+      </div>
+
+      <div class="list-section">
+        <div class="list-header">
+          <h2 class="list-title">등록된 수업</h2>
+          <span class="list-count" id="classListCount">0개</span>
+        </div>
+        <div class="class-list" id="classList"></div>
+      </div>
     </div>
-    <div class="class-list" id="classList"></div>
   </section>
+
+  <section class="panel" id="panel-assignments">
+    <div class="two-col">
+      <div class="form-card">
+        <h2 class="form-title"><span class="dot"></span>과제 등록</h2>
+
+        <label for="assignClassSelect">수업 선택</label>
+        <select id="assignClassSelect"></select>
+
+        <label for="assignTitle">과제 제목</label>
+        <input type="text" id="assignTitle" placeholder="예: 3주차 독후감 제출">
+
+        <label for="assignType">과제 유형</label>
+        <select id="assignType">
+          <option value="리포트">리포트</option>
+          <option value="발표">발표</option>
+          <option value="퀴즈">퀴즈</option>
+          <option value="기타">기타</option>
+        </select>
+
+        <label for="assignDate">마감 날짜</label>
+        <input type="date" id="assignDate">
+
+        <label for="assignTime">마감 시간</label>
+        <input type="time" id="assignTime" value="23:59">
+
+        <label for="assignMemo">메모 (선택)</label>
+        <textarea id="assignMemo" placeholder="예: A4 2장 이상, 출처 표기"></textarea>
+
+        <button class="submit-btn" id="assignSubmitBtn">+ 과제 추가하기</button>
+        <p class="form-hint" id="assignFormHint"></p>
+      </div>
+
+      <div class="list-section">
+        <div class="list-header">
+          <h2 class="list-title">전체 과제</h2>
+          <span class="list-count" id="assignListCount">0개</span>
+        </div>
+        <div class="assignment-list" id="assignmentList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-links">
+    <div class="two-col">
+      <div class="form-card">
+        <h2 class="form-title"><span class="dot"></span>자료 링크 추가</h2>
+
+        <label for="linkClassSelect">수업 선택</label>
+        <select id="linkClassSelect"></select>
+
+        <label for="linkName">자료 이름</label>
+        <input type="text" id="linkName" placeholder="예: 3주차 강의 PPT">
+
+        <label for="linkUrl">링크 주소 (URL)</label>
+        <input type="url" id="linkUrl" placeholder="https://...">
+
+        <button class="submit-btn" id="linkSubmitBtn">+ 링크 추가하기</button>
+        <p class="form-hint" id="linkFormHint"></p>
+      </div>
+
+      <div class="list-section">
+        <div class="list-header">
+          <h2 class="list-title">저장된 자료</h2>
+          <span class="list-count" id="linkListCount">0개</span>
+        </div>
+        <div class="link-list" id="linkList"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="reset-row">
+    <button class="reset-btn" id="resetAllBtn">전체 데이터 초기화 (새 학기 시작)</button>
+  </div>
+
 </main>
 
-<footer>로컬 브라우저에 저장됩니다 · 내 시간표 관리</footer>
+<footer>모든 데이터는 이 브라우저에만 저장됩니다 · 내 시간표 관리</footer>
 
 <script>
 (function(){
-  const STORAGE_KEY = 'classManager.classes';
+  const KEY_CLASSES = 'classManager.classes';
+  const KEY_ASSIGNMENTS = 'classManager.assignments';
+  const KEY_LINKS = 'classManager.links';
 
   let selectedDays = [];
   let selectedColor = '#E8714A';
 
+  function load(key){
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ console.error('불러오기 실패', key, e); return []; }
+  }
+  function save(key, data){ localStorage.setItem(key, JSON.stringify(data)); }
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+  function dayOrder(day){ return ['월','화','수','목','금'].indexOf(day); }
+  function todayStr(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function diffDays(dateStr){
+    const today = new Date(todayStr() + 'T00:00:00');
+    const target = new Date(dateStr + 'T00:00:00');
+    return Math.round((target - today) / 86400000);
+  }
+  function classById(id){
+    return load(KEY_CLASSES).find(c => String(c.id) === String(id));
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+      if(btn.dataset.tab === 'dashboard') renderDashboard();
+      if(btn.dataset.tab === 'assignments') refreshClassSelect('assignClassSelect');
+      if(btn.dataset.tab === 'links') refreshClassSelect('linkClassSelect');
+    });
+  });
+
+  function refreshClassSelect(selectId){
+    const sel = document.getElementById(selectId);
+    const classes = load(KEY_CLASSES);
+    const current = sel.value;
+    if(classes.length === 0){
+      sel.innerHTML = '<option value="">먼저 수업을 등록해주세요</option>';
+      return;
+    }
+    sel.innerHTML = classes.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+    if(current && classes.some(c => String(c.id) === current)) sel.value = current;
+  }
+
+  // ===== 1. 수업 등록 =====
   const dayGrid = document.getElementById('dayGrid');
   const colorGrid = document.getElementById('colorGrid');
   const classList = document.getElementById('classList');
-  const listCount = document.getElementById('listCount');
-  const formHint = document.getElementById('formHint');
-  const submitBtn = document.getElementById('submitBtn');
+  const classListCount = document.getElementById('classListCount');
+  const classFormHint = document.getElementById('classFormHint');
 
   dayGrid.addEventListener('click', (e) => {
     const chip = e.target.closest('.day-chip');
@@ -428,32 +748,21 @@
   colorGrid.addEventListener('click', (e) => {
     const swatch = e.target.closest('.color-swatch');
     if(!swatch) return;
-    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+    document.querySelectorAll('#colorGrid .color-swatch').forEach(s => s.classList.remove('selected'));
     swatch.classList.add('selected');
     selectedColor = swatch.dataset.color;
   });
 
-  function loadClasses(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    }catch(e){
-      console.error('데이터 불러오기 실패', e);
-      return [];
-    }
-  }
-
-  function saveClasses(classes){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(classes));
-  }
-
-  function dayOrder(day){
-    return ['월','화','수','목','금'].indexOf(day);
+  function showHint(el, msg, isError){
+    el.textContent = msg;
+    el.className = 'form-hint' + (isError ? ' error' : '');
+    if(!isError) setTimeout(() => { el.textContent = ''; }, 2200);
   }
 
   function renderClasses(){
-    const classes = loadClasses();
-    listCount.textContent = classes.length + '개';
+    const classes = load(KEY_CLASSES);
+    classListCount.textContent = classes.length + '개';
+    document.getElementById('classBadge').textContent = classes.length;
 
     if(classes.length === 0){
       classList.innerHTML = `
@@ -469,9 +778,8 @@
       const dayTags = days.map(d => `<span class="day-tag">${d}</span>`).join('');
       const locationLine = c.location ? `<p class="class-meta">📍 ${escapeHtml(c.location)}</p>` : '';
       const profLine = c.professor ? `<p class="class-meta">${escapeHtml(c.professor)}</p>` : '';
-
       return `
-        <div class="class-card" data-id="${c.id}">
+        <div class="class-card">
           <div class="class-stripe" style="background:${c.color}"></div>
           <div class="class-body">
             <h3 class="class-name">${escapeHtml(c.name)}</h3>
@@ -481,36 +789,23 @@
             <div class="class-tags">${dayTags}</div>
           </div>
           <button class="delete-btn" data-id="${c.id}" title="삭제">✕</button>
-        </div>
-      `;
+        </div>`;
     }).join('');
-  }
-
-  function escapeHtml(str){
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
   }
 
   classList.addEventListener('click', (e) => {
     const btn = e.target.closest('.delete-btn');
     if(!btn) return;
-    const id = btn.dataset.id;
-    let classes = loadClasses();
-    classes = classes.filter(c => String(c.id) !== String(id));
-    saveClasses(classes);
+    if(!confirm('이 수업을 삭제하면 연결된 과제·자료는 유지되지만 수업명이 사라져요. 삭제할까요?')) return;
+    let classes = load(KEY_CLASSES);
+    classes = classes.filter(c => String(c.id) !== String(btn.dataset.id));
+    save(KEY_CLASSES, classes);
     renderClasses();
+    refreshClassSelect('assignClassSelect');
+    refreshClassSelect('linkClassSelect');
   });
 
-  function showHint(msg, isError){
-    formHint.textContent = msg;
-    formHint.className = 'form-hint' + (isError ? ' error' : '');
-    if(!isError){
-      setTimeout(() => { formHint.textContent = ''; }, 2200);
-    }
-  }
-
-  function resetForm(){
+  function resetClassForm(){
     document.getElementById('className').value = '';
     document.getElementById('professor').value = '';
     document.getElementById('location').value = '';
@@ -519,50 +814,247 @@
     selectedDays = [];
     document.querySelectorAll('.day-chip').forEach(c => c.classList.remove('selected'));
     selectedColor = '#E8714A';
-    document.querySelectorAll('.color-swatch').forEach((s,i) => {
-      s.classList.toggle('selected', i === 0);
-    });
+    document.querySelectorAll('#colorGrid .color-swatch').forEach((s,i) => s.classList.toggle('selected', i===0));
   }
 
-  submitBtn.addEventListener('click', () => {
+  document.getElementById('classSubmitBtn').addEventListener('click', () => {
     const name = document.getElementById('className').value.trim();
     const professor = document.getElementById('professor').value.trim();
     const location = document.getElementById('location').value.trim();
     const startTime = document.getElementById('startTime').value;
     const endTime = document.getElementById('endTime').value;
 
-    if(!name){
-      showHint('수업 이름을 입력해주세요.', true);
-      return;
-    }
-    if(selectedDays.length === 0){
-      showHint('수업 요일을 1개 이상 선택해주세요.', true);
-      return;
-    }
-    if(startTime >= endTime){
-      showHint('종료 시간이 시작 시간보다 늦어야 해요.', true);
-      return;
-    }
+    if(!name) return showHint(classFormHint, '수업 이름을 입력해주세요.', true);
+    if(selectedDays.length === 0) return showHint(classFormHint, '수업 요일을 1개 이상 선택해주세요.', true);
+    if(startTime >= endTime) return showHint(classFormHint, '종료 시간이 시작 시간보다 늦어야 해요.', true);
 
-    const newClass = {
-      id: Date.now(),
-      name, professor, location,
-      startTime, endTime,
-      days: selectedDays.slice(),
-      color: selectedColor
-    };
-
-    const classes = loadClasses();
+    const newClass = { id: Date.now(), name, professor, location, startTime, endTime, days: selectedDays.slice(), color: selectedColor };
+    const classes = load(KEY_CLASSES);
     classes.push(newClass);
-    saveClasses(classes);
+    save(KEY_CLASSES, classes);
 
-    resetForm();
-    showHint('수업이 추가되었어요 ✓', false);
+    resetClassForm();
+    showHint(classFormHint, '수업이 추가되었어요 ✓', false);
     renderClasses();
+    refreshClassSelect('assignClassSelect');
+    refreshClassSelect('linkClassSelect');
   });
 
-  // 초기 렌더
+  // ===== 2. 과제 관리 =====
+  const assignmentList = document.getElementById('assignmentList');
+  const assignListCount = document.getElementById('assignListCount');
+  const assignFormHint = document.getElementById('assignFormHint');
+
+  document.getElementById('assignDate').value = todayStr();
+
+  function ddayLabel(dateStr, isDone){
+    const d = diffDays(dateStr);
+    if(isDone) return { text:'완료', cls:'done' };
+    if(d < 0) return { text:'마감 지남', cls:'urgent' };
+    if(d === 0) return { text:'오늘 마감', cls:'urgent' };
+    if(d === 1) return { text:'D-1', cls:'urgent' };
+    return { text:'D-' + d, cls:'' };
+  }
+
+  function renderAssignments(filterFn, targetEl, emptyMsg){
+    const all = load(KEY_ASSIGNMENTS);
+    const list = (filterFn ? all.filter(filterFn) : all)
+      .slice()
+      .sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+
+    if(list.length === 0){
+      targetEl.innerHTML = `<div class="empty-state"><span class="big">${emptyMsg.big}</span>${emptyMsg.small}</div>`;
+      return;
+    }
+
+    targetEl.innerHTML = list.map(a => {
+      const cls = classById(a.classId);
+      const className = cls ? cls.name : '(삭제된 수업)';
+      const color = cls ? cls.color : '#999';
+      const dday = ddayLabel(a.date, a.done);
+      const memoLine = a.memo ? `<p class="class-meta">📝 ${escapeHtml(a.memo)}</p>` : '';
+      return `
+        <div class="assignment-card ${a.done ? 'done' : ''}">
+          <div class="class-stripe" style="background:${color}"></div>
+          <button class="check-btn ${a.done ? 'checked' : ''}" data-id="${a.id}" title="완료 체크">${a.done ? '✓' : ''}</button>
+          <div class="assignment-body">
+            <span class="dday-tag ${dday.cls}">${dday.text}</span>
+            <h3 class="assignment-name">${escapeHtml(a.title)}</h3>
+            <p class="assignment-meta">${escapeHtml(className)} · <span class="type-tag">${a.type}</span></p>
+            <p class="assignment-meta">📅 ${a.date} ${a.time}</p>
+            ${memoLine}
+          </div>
+          <button class="delete-btn" data-id="${a.id}" title="삭제">✕</button>
+        </div>`;
+    }).join('');
+  }
+
+  function renderAllAssignments(){
+    const all = load(KEY_ASSIGNMENTS);
+    assignListCount.textContent = all.length + '개';
+    document.getElementById('assignBadge').textContent = all.filter(a => !a.done).length;
+    renderAssignments(null, assignmentList, { big:'아직 등록된 과제가 없어요', small:'왼쪽 폼에서 첫 과제를 추가해보세요 ✏️' });
+  }
+
+  assignmentList.addEventListener('click', (e) => handleAssignmentClick(e));
+  document.getElementById('todayList').addEventListener('click', (e) => handleAssignmentClick(e));
+  document.getElementById('weekList').addEventListener('click', (e) => handleAssignmentClick(e));
+
+  function handleAssignmentClick(e){
+    const checkBtn = e.target.closest('.check-btn');
+    const delBtn = e.target.closest('.delete-btn');
+    if(checkBtn){
+      const all = load(KEY_ASSIGNMENTS);
+      const item = all.find(a => String(a.id) === String(checkBtn.dataset.id));
+      if(item){ item.done = !item.done; save(KEY_ASSIGNMENTS, all); }
+      renderAllAssignments();
+      renderDashboard();
+    }
+    if(delBtn){
+      let all = load(KEY_ASSIGNMENTS);
+      all = all.filter(a => String(a.id) !== String(delBtn.dataset.id));
+      save(KEY_ASSIGNMENTS, all);
+      renderAllAssignments();
+      renderDashboard();
+    }
+  }
+
+  document.getElementById('assignSubmitBtn').addEventListener('click', () => {
+    const classId = document.getElementById('assignClassSelect').value;
+    const title = document.getElementById('assignTitle').value.trim();
+    const type = document.getElementById('assignType').value;
+    const date = document.getElementById('assignDate').value;
+    const time = document.getElementById('assignTime').value || '23:59';
+    const memo = document.getElementById('assignMemo').value.trim();
+
+    if(!classId) return showHint(assignFormHint, '수업을 먼저 등록하고 선택해주세요.', true);
+    if(!title) return showHint(assignFormHint, '과제 제목을 입력해주세요.', true);
+    if(!date) return showHint(assignFormHint, '마감 날짜를 선택해주세요.', true);
+
+    const newAssign = { id: Date.now(), classId, title, type, date, time, memo, done:false };
+    const all = load(KEY_ASSIGNMENTS);
+    all.push(newAssign);
+    save(KEY_ASSIGNMENTS, all);
+
+    document.getElementById('assignTitle').value = '';
+    document.getElementById('assignMemo').value = '';
+    document.getElementById('assignDate').value = todayStr();
+    document.getElementById('assignTime').value = '23:59';
+
+    showHint(assignFormHint, '과제가 추가되었어요 ✓', false);
+    renderAllAssignments();
+    renderDashboard();
+  });
+
+  // ===== 3. 대시보드 =====
+  function renderDashboard(){
+    const classes = load(KEY_CLASSES);
+    const assignments = load(KEY_ASSIGNMENTS);
+    const pending = assignments.filter(a => !a.done);
+    const todayItems = pending.filter(a => a.date === todayStr());
+    const weekItems = pending.filter(a => { const d = diffDays(a.date); return d >= 0 && d <= 7 && a.date !== todayStr(); });
+
+    document.getElementById('statTotalClasses').textContent = classes.length;
+    document.getElementById('statPendingAssign').textContent = pending.length;
+    document.getElementById('statTodayAssign').textContent = todayItems.length;
+
+    document.getElementById('todayCount').textContent = todayItems.length + '개';
+    document.getElementById('weekCount').textContent = weekItems.length + '개';
+
+    renderAssignments(a => !a.done && a.date === todayStr(), document.getElementById('todayList'),
+      { big:'오늘 마감인 과제가 없어요', small:'여유롭게 하루를 보내세요 ☕' });
+
+    renderAssignments(a => { if(a.done) return false; const d = diffDays(a.date); return d >= 0 && d <= 7 && a.date !== todayStr(); },
+      document.getElementById('weekList'),
+      { big:'이번 주 마감 과제가 없어요', small:'등록된 과제를 확인해보세요' });
+  }
+
+  // ===== 4. 강의자료 링크 =====
+  const linkList = document.getElementById('linkList');
+  const linkListCount = document.getElementById('linkListCount');
+  const linkFormHint = document.getElementById('linkFormHint');
+
+  function renderLinks(){
+    const links = load(KEY_LINKS);
+    linkListCount.textContent = links.length + '개';
+
+    if(links.length === 0){
+      linkList.innerHTML = `
+        <div class="empty-state">
+          <span class="big">저장된 자료가 없어요</span>
+          수업별 강의자료 링크를 추가해보세요 🔗
+        </div>`;
+      return;
+    }
+
+    linkList.innerHTML = links.map(l => {
+      const cls = classById(l.classId);
+      const className = cls ? cls.name : '(삭제된 수업)';
+      const color = cls ? cls.color : '#999';
+      return `
+        <div class="link-card">
+          <div class="class-stripe" style="background:${color}"></div>
+          <div class="link-body">
+            <h3 class="class-name">${escapeHtml(l.name)}</h3>
+            <p class="class-meta">${escapeHtml(className)}</p>
+            <p class="class-meta"><a href="${escapeHtml(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.url)}</a></p>
+          </div>
+          <button class="delete-btn" data-id="${l.id}" title="삭제">✕</button>
+        </div>`;
+    }).join('');
+  }
+
+  linkList.addEventListener('click', (e) => {
+    const btn = e.target.closest('.delete-btn');
+    if(!btn) return;
+    let links = load(KEY_LINKS);
+    links = links.filter(l => String(l.id) !== String(btn.dataset.id));
+    save(KEY_LINKS, links);
+    renderLinks();
+  });
+
+  document.getElementById('linkSubmitBtn').addEventListener('click', () => {
+    const classId = document.getElementById('linkClassSelect').value;
+    const name = document.getElementById('linkName').value.trim();
+    let url = document.getElementById('linkUrl').value.trim();
+
+    if(!classId) return showHint(linkFormHint, '수업을 먼저 등록하고 선택해주세요.', true);
+    if(!name) return showHint(linkFormHint, '자료 이름을 입력해주세요.', true);
+    if(!url) return showHint(linkFormHint, '링크 주소를 입력해주세요.', true);
+    if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+    const newLink = { id: Date.now(), classId, name, url };
+    const links = load(KEY_LINKS);
+    links.push(newLink);
+    save(KEY_LINKS, links);
+
+    document.getElementById('linkName').value = '';
+    document.getElementById('linkUrl').value = '';
+
+    showHint(linkFormHint, '자료가 추가되었어요 ✓', false);
+    renderLinks();
+  });
+
+  // ===== 전체 초기화 =====
+  document.getElementById('resetAllBtn').addEventListener('click', () => {
+    if(!confirm('정말 모든 데이터(수업, 과제, 자료)를 삭제할까요? 이 작업은 되돌릴 수 없어요.')) return;
+    localStorage.removeItem(KEY_CLASSES);
+    localStorage.removeItem(KEY_ASSIGNMENTS);
+    localStorage.removeItem(KEY_LINKS);
+    renderClasses();
+    renderAllAssignments();
+    renderLinks();
+    renderDashboard();
+    refreshClassSelect('assignClassSelect');
+    refreshClassSelect('linkClassSelect');
+  });
+
   renderClasses();
+  renderAllAssignments();
+  renderLinks();
+  renderDashboard();
+  refreshClassSelect('assignClassSelect');
+  refreshClassSelect('linkClassSelect');
 })();
 </script>
 
