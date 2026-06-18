@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>내 시간표 — 수업 등록</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gaegu:wght@400;700&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF6EC;
+    --paper-line:#E3D9C2;
+    --ink:#2B2A28;
+    --ink-soft:#6B6457;
+    --accent-yellow:#F4C95D;
+    --accent-coral:#E8714A;
+    --accent-mint:#79B4A6;
+    --accent-blue:#5B7FB5;
+    --accent-purple:#9C7BB0;
+    --card:#FFFDF8;
+    --shadow: 4px 4px 0 rgba(43,42,40,0.12);
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(var(--paper) 0px, var(--paper) 31px, var(--paper-line) 32px),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Pretendard', sans-serif;
+    min-height:100vh;
+  }
+
+  .corkboard-margin{
+    position:fixed;
+    top:0; left:60px;
+    width:1px; height:100%;
+    background:rgba(232,113,74,0.25);
+    z-index:0;
+  }
+
+  header{
+    position:relative;
+    padding:48px 32px 28px 90px;
+    z-index:1;
+  }
+
+  .eyebrow{
+    font-family:'Gaegu', sans-serif;
+    font-size:18px;
+    color:var(--accent-coral);
+    font-weight:700;
+    display:inline-block;
+    transform:rotate(-2deg);
+    margin-bottom:6px;
+  }
+
+  h1{
+    font-family:'Gowun Batang', serif;
+    font-size:40px;
+    margin:0 0 8px 0;
+    letter-spacing:-0.5px;
+  }
+
+  .sub{
+    color:var(--ink-soft);
+    font-size:15px;
+    margin:0;
+  }
+
+  main{
+    position:relative;
+    z-index:1;
+    max-width:980px;
+    margin:0 auto;
+    padding:0 32px 80px 90px;
+    display:grid;
+    grid-template-columns:380px 1fr;
+    gap:32px;
+  }
+
+  @media (max-width:780px){
+    main{ grid-template-columns:1fr; padding-left:32px; }
+    header{ padding-left:32px; }
+    .corkboard-margin{ display:none; }
+  }
+
+  /* ---- 등록 폼 카드 ---- */
+  .form-card{
+    background:var(--card);
+    border:1.5px solid var(--ink);
+    border-radius:2px;
+    box-shadow:var(--shadow);
+    padding:28px 26px;
+    position:relative;
+    height:fit-content;
+  }
+
+  .form-card::before{
+    content:"";
+    position:absolute;
+    top:-10px; left:24px;
+    width:46px; height:20px;
+    background:rgba(244,201,93,0.85);
+    transform:rotate(-3deg);
+    box-shadow:1px 2px 3px rgba(0,0,0,0.15);
+  }
+
+  .form-title{
+    font-family:'Gowun Batang', serif;
+    font-size:21px;
+    margin:6px 0 22px 0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .form-title .dot{
+    width:8px; height:8px; border-radius:50%;
+    background:var(--accent-coral);
+    display:inline-block;
+  }
+
+  label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin:16px 0 6px 0;
+  }
+  label:first-of-type{ margin-top:0; }
+
+  input[type="text"], input[type="time"]{
+    width:100%;
+    padding:10px 12px;
+    border:1.5px solid var(--paper-line);
+    border-radius:4px;
+    background:#fff;
+    font-family:'Pretendard', sans-serif;
+    font-size:14.5px;
+    color:var(--ink);
+    transition:border-color .15s ease;
+  }
+  input[type="text"]:focus, input[type="time"]:focus{
+    outline:none;
+    border-color:var(--accent-coral);
+  }
+
+  .time-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .time-row span{ color:var(--ink-soft); font-size:13px; }
+
+  .day-grid{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  .day-chip{
+    padding:8px 0;
+    width:38px;
+    text-align:center;
+    border:1.5px solid var(--paper-line);
+    border-radius:50%;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    user-select:none;
+    color:var(--ink-soft);
+    background:#fff;
+    transition:all .15s ease;
+  }
+  .day-chip.selected{
+    background:var(--ink);
+    border-color:var(--ink);
+    color:var(--paper);
+  }
+
+  .color-grid{
+    display:flex;
+    gap:10px;
+  }
+  .color-swatch{
+    width:28px; height:28px;
+    border-radius:50%;
+    cursor:pointer;
+    border:2.5px solid transparent;
+    position:relative;
+  }
+  .color-swatch.selected::after{
+    content:"";
+    position:absolute;
+    inset:-4px;
+    border-radius:50%;
+    border:2px solid var(--ink);
+  }
+
+  .submit-btn{
+    margin-top:24px;
+    width:100%;
+    padding:13px;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    border-radius:4px;
+    font-family:'Pretendard', sans-serif;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.3px;
+    transition:transform .12s ease;
+  }
+  .submit-btn:hover{ transform:translateY(-1px); }
+  .submit-btn:active{ transform:translateY(0); }
+
+  .form-hint{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:10px;
+    min-height:16px;
+  }
+  .form-hint.error{ color:var(--accent-coral); font-weight:600; }
+
+  /* ---- 리스트 영역 ---- */
+  .list-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:16px;
+  }
+  .list-title{
+    font-family:'Gowun Batang', serif;
+    font-size:21px;
+  }
+  .list-count{
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+
+  .class-list{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .class-card{
+    background:var(--card);
+    border:1.5px solid var(--ink);
+    border-radius:2px;
+    padding:18px 20px;
+    box-shadow:var(--shadow);
+    position:relative;
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+  }
+
+  .class-stripe{
+    width:6px;
+    align-self:stretch;
+    border-radius:3px;
+    flex-shrink:0;
+  }
+
+  .class-body{ flex:1; min-width:0; }
+
+  .class-name{
+    font-family:'Gowun Batang', serif;
+    font-size:19px;
+    margin:0 0 4px 0;
+  }
+
+  .class-meta{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    margin:2px 0;
+  }
+
+  .class-tags{
+    display:flex;
+    gap:6px;
+    margin-top:10px;
+  }
+
+  .day-tag{
+    font-size:11.5px;
+    font-weight:700;
+    padding:3px 8px;
+    border-radius:10px;
+    background:var(--paper);
+    border:1px solid var(--paper-line);
+    color:var(--ink-soft);
+  }
+
+  .delete-btn{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-size:18px;
+    cursor:pointer;
+    line-height:1;
+    padding:4px;
+    transition:color .15s ease;
+  }
+  .delete-btn:hover{ color:var(--accent-coral); }
+
+  .empty-state{
+    border:1.5px dashed var(--paper-line);
+    border-radius:4px;
+    padding:48px 24px;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:14px;
+  }
+  .empty-state .big{
+    font-family:'Gaegu', sans-serif;
+    font-size:22px;
+    color:var(--ink);
+    display:block;
+    margin-bottom:6px;
+    transform:rotate(-1deg);
+  }
+
+  footer{
+    text-align:center;
+    padding:24px;
+    font-size:12px;
+    color:var(--ink-soft);
+    position:relative;
+    z-index:1;
+  }
+</style>
+</head>
+<body>
+
+<div class="corkboard-margin"></div>
+
+<header>
+  <span class="eyebrow">My Semester ✦</span>
+  <h1>내 시간표 관리</h1>
+  <p class="sub">수업을 등록하고 한눈에 정리해보세요.</p>
+</header>
+
+<main>
+  <section class="form-card">
+    <h2 class="form-title"><span class="dot"></span>수업 등록</h2>
+
+    <label for="className">수업 이름</label>
+    <input type="text" id="className" placeholder="예: 서양철학사">
+
+    <label for="professor">교수명</label>
+    <input type="text" id="professor" placeholder="예: 김OO 교수님">
+
+    <label>수업 요일</label>
+    <div class="day-grid" id="dayGrid">
+      <div class="day-chip" data-day="월">월</div>
+      <div class="day-chip" data-day="화">화</div>
+      <div class="day-chip" data-day="수">수</div>
+      <div class="day-chip" data-day="목">목</div>
+      <div class="day-chip" data-day="금">금</div>
+    </div>
+
+    <label>수업 시간</label>
+    <div class="time-row">
+      <input type="time" id="startTime" value="09:00">
+      <span>~</span>
+      <input type="time" id="endTime" value="10:30">
+    </div>
+
+    <label for="location">강의실 (선택)</label>
+    <input type="text" id="location" placeholder="예: 인문관 401호">
+
+    <label>수업 색상</label>
+    <div class="color-grid" id="colorGrid">
+      <div class="color-swatch selected" style="background:#E8714A" data-color="#E8714A"></div>
+      <div class="color-swatch" style="background:#F4C95D" data-color="#F4C95D"></div>
+      <div class="color-swatch" style="background:#79B4A6" data-color="#79B4A6"></div>
+      <div class="color-swatch" style="background:#5B7FB5" data-color="#5B7FB5"></div>
+      <div class="color-swatch" style="background:#9C7BB0" data-color="#9C7BB0"></div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn">+ 수업 추가하기</button>
+    <p class="form-hint" id="formHint"></p>
+  </section>
+
+  <section class="list-section">
+    <div class="list-header">
+      <h2 class="list-title">등록된 수업</h2>
+      <span class="list-count" id="listCount">0개</span>
+    </div>
+    <div class="class-list" id="classList"></div>
+  </section>
+</main>
+
+<footer>로컬 브라우저에 저장됩니다 · 내 시간표 관리</footer>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'classManager.classes';
+
+  let selectedDays = [];
+  let selectedColor = '#E8714A';
+
+  const dayGrid = document.getElementById('dayGrid');
+  const colorGrid = document.getElementById('colorGrid');
+  const classList = document.getElementById('classList');
+  const listCount = document.getElementById('listCount');
+  const formHint = document.getElementById('formHint');
+  const submitBtn = document.getElementById('submitBtn');
+
+  dayGrid.addEventListener('click', (e) => {
+    const chip = e.target.closest('.day-chip');
+    if(!chip) return;
+    const day = chip.dataset.day;
+    if(selectedDays.includes(day)){
+      selectedDays = selectedDays.filter(d => d !== day);
+      chip.classList.remove('selected');
+    } else {
+      selectedDays.push(day);
+      chip.classList.add('selected');
+    }
+  });
+
+  colorGrid.addEventListener('click', (e) => {
+    const swatch = e.target.closest('.color-swatch');
+    if(!swatch) return;
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+    swatch.classList.add('selected');
+    selectedColor = swatch.dataset.color;
+  });
+
+  function loadClasses(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){
+      console.error('데이터 불러오기 실패', e);
+      return [];
+    }
+  }
+
+  function saveClasses(classes){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(classes));
+  }
+
+  function dayOrder(day){
+    return ['월','화','수','목','금'].indexOf(day);
+  }
+
+  function renderClasses(){
+    const classes = loadClasses();
+    listCount.textContent = classes.length + '개';
+
+    if(classes.length === 0){
+      classList.innerHTML = `
+        <div class="empty-state">
+          <span class="big">아직 등록된 수업이 없어요</span>
+          왼쪽 폼에서 첫 수업을 추가해보세요 ✏️
+        </div>`;
+      return;
+    }
+
+    classList.innerHTML = classes.map(c => {
+      const days = (c.days || []).slice().sort((a,b)=>dayOrder(a)-dayOrder(b));
+      const dayTags = days.map(d => `<span class="day-tag">${d}</span>`).join('');
+      const locationLine = c.location ? `<p class="class-meta">📍 ${escapeHtml(c.location)}</p>` : '';
+      const profLine = c.professor ? `<p class="class-meta">${escapeHtml(c.professor)}</p>` : '';
+
+      return `
+        <div class="class-card" data-id="${c.id}">
+          <div class="class-stripe" style="background:${c.color}"></div>
+          <div class="class-body">
+            <h3 class="class-name">${escapeHtml(c.name)}</h3>
+            ${profLine}
+            <p class="class-meta">🕐 ${c.startTime} ~ ${c.endTime}</p>
+            ${locationLine}
+            <div class="class-tags">${dayTags}</div>
+          </div>
+          <button class="delete-btn" data-id="${c.id}" title="삭제">✕</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  classList.addEventListener('click', (e) => {
+    const btn = e.target.closest('.delete-btn');
+    if(!btn) return;
+    const id = btn.dataset.id;
+    let classes = loadClasses();
+    classes = classes.filter(c => String(c.id) !== String(id));
+    saveClasses(classes);
+    renderClasses();
+  });
+
+  function showHint(msg, isError){
+    formHint.textContent = msg;
+    formHint.className = 'form-hint' + (isError ? ' error' : '');
+    if(!isError){
+      setTimeout(() => { formHint.textContent = ''; }, 2200);
+    }
+  }
+
+  function resetForm(){
+    document.getElementById('className').value = '';
+    document.getElementById('professor').value = '';
+    document.getElementById('location').value = '';
+    document.getElementById('startTime').value = '09:00';
+    document.getElementById('endTime').value = '10:30';
+    selectedDays = [];
+    document.querySelectorAll('.day-chip').forEach(c => c.classList.remove('selected'));
+    selectedColor = '#E8714A';
+    document.querySelectorAll('.color-swatch').forEach((s,i) => {
+      s.classList.toggle('selected', i === 0);
+    });
+  }
+
+  submitBtn.addEventListener('click', () => {
+    const name = document.getElementById('className').value.trim();
+    const professor = document.getElementById('professor').value.trim();
+    const location = document.getElementById('location').value.trim();
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+
+    if(!name){
+      showHint('수업 이름을 입력해주세요.', true);
+      return;
+    }
+    if(selectedDays.length === 0){
+      showHint('수업 요일을 1개 이상 선택해주세요.', true);
+      return;
+    }
+    if(startTime >= endTime){
+      showHint('종료 시간이 시작 시간보다 늦어야 해요.', true);
+      return;
+    }
+
+    const newClass = {
+      id: Date.now(),
+      name, professor, location,
+      startTime, endTime,
+      days: selectedDays.slice(),
+      color: selectedColor
+    };
+
+    const classes = loadClasses();
+    classes.push(newClass);
+    saveClasses(classes);
+
+    resetForm();
+    showHint('수업이 추가되었어요 ✓', false);
+    renderClasses();
+  });
+
+  // 초기 렌더
+  renderClasses();
+})();
+</script>
+
+</body>
+</html>
